@@ -1,48 +1,61 @@
 
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-interface Ticket {
-  id: number;
-  title: string;
-  description: string;
-  priority: "low" | "medium" | "high";
-  status: "open" | "in-progress" | "resolved" | "closed";
-  createdAt: string;
-}
-
-const mockTickets: Ticket[] = [
-  {
-    id: 1,
-    title: "Problème de connexion VPN",
-    description: "Impossible de se connecter au VPN depuis ce matin",
-    priority: "high",
-    status: "open",
-    createdAt: "2024-03-10T09:00:00",
-  },
-  {
-    id: 2,
-    title: "Mise à jour logiciel",
-    description: "Demande de mise à jour de l'application de comptabilité",
-    priority: "medium",
-    status: "in-progress",
-    createdAt: "2024-03-09T14:30:00",
-  },
-  {
-    id: 3,
-    title: "Problème d'impression",
-    description: "L'imprimante du service marketing ne répond plus",
-    priority: "low",
-    status: "resolved",
-    createdAt: "2024-03-08T11:15:00",
-  },
-];
+import { supabase } from "@/lib/supabase";
+import { Ticket } from "@/types/supabase";
+import { useToast } from "@/components/ui/use-toast";
 
 interface TicketListProps {
   onSelectTicket: (id: number) => void;
 }
 
 const TicketList = ({ onSelectTicket }: TicketListProps) => {
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchTickets();
+    const subscription = supabase
+      .channel('tickets')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'tickets' 
+      }, handleTicketChange)
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchTickets = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tickets')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTickets(data || []);
+    } catch (error) {
+      console.error('Error fetching tickets:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les tickets",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTicketChange = (payload: any) => {
+    fetchTickets();
+  };
+
   const getPriorityClass = (priority: Ticket["priority"]) => {
     return `priority-badge priority-${priority}`;
   };
@@ -59,9 +72,17 @@ const TicketList = ({ onSelectTicket }: TicketListProps) => {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-4 animate-slide-in">
-      {mockTickets.map((ticket) => (
+      {tickets.map((ticket) => (
         <Card
           key={ticket.id}
           className="ticket-card cursor-pointer"
@@ -84,7 +105,7 @@ const TicketList = ({ onSelectTicket }: TicketListProps) => {
             </div>
           </div>
           <div className="mt-4 text-xs text-gray-500">
-            Créé le {formatDate(ticket.createdAt)}
+            Créé le {formatDate(ticket.created_at)}
           </div>
         </Card>
       ))}
