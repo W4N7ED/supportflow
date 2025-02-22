@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Search, Plus, Bell, User } from "lucide-react";
@@ -8,8 +7,6 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 
 const Index = () => {
-  const [selectedTicket, setSelectedTicket] = useState<number | null>(null);
-
   return (
     <div className="flex h-screen flex-col">
       <Header />
@@ -20,7 +17,7 @@ const Index = () => {
             <h1 className="text-2xl font-semibold text-gray-900">Tickets</h1>
             <p className="text-sm text-gray-500">Gérez vos tickets de support</p>
           </div>
-          <TicketList onSelectTicket={setSelectedTicket} />
+          <TicketList />
         </main>
       </div>
     </div>
