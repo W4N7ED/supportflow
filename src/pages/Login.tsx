@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { Microsoft } from "lucide-react";
+import { MailIcon } from "lucide-react";
 
 const Login = () => {
   const [identifier, setIdentifier] = useState("");
@@ -21,18 +20,15 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // Vérifier d'abord si l'identifiant est un email
       const isEmail = identifier.includes('@');
       
       let authResponse;
       if (isEmail) {
-        // Connexion avec email
         authResponse = await supabase.auth.signInWithPassword({
           email: identifier,
           password,
         });
       } else {
-        // Connexion avec username - rechercher d'abord l'email correspondant
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('email')
@@ -52,7 +48,6 @@ const Login = () => {
       if (error) throw error;
 
       if (user) {
-        // Vérifier le rôle de l'utilisateur
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
@@ -200,7 +195,7 @@ const Login = () => {
                 onClick={handleMicrosoftLogin}
                 disabled={isLoading}
               >
-                <Microsoft className="mr-2 h-4 w-4" />
+                <MailIcon className="mr-2 h-4 w-4" />
                 Connexion avec Microsoft
               </Button>
             </div>
