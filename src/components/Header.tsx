@@ -1,5 +1,5 @@
 
-import { Bell, Search, User, Sun, Moon, Laptop } from "lucide-react";
+import { Bell, Search, User, Sun, Moon, Laptop, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -9,10 +9,30 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useTheme } from "./theme-provider";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "./ui/use-toast";
 
 const Header = () => {
   const { setTheme } = useTheme();
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Déconnexion réussie",
+        description: "Vous avez été déconnecté avec succès",
+      });
+      navigate('/login');
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la déconnexion",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <header className="border-b bg-background px-6 py-3">
@@ -80,9 +100,23 @@ const Header = () => {
           <Button variant="ghost" size="icon">
             <Bell className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon">
-            <User className="h-5 w-5" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => navigate('/settings')}>
+                <User className="mr-2 h-4 w-4" />
+                <span>Paramètres</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Déconnexion</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
