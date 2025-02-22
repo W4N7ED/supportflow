@@ -113,43 +113,85 @@ export type Database = {
       }
       tickets: {
         Row: {
+          actual_behavior: string | null
           assigned_to: string | null
+          attempted_actions: string | null
+          availability_slots: string | null
+          browser_version: string | null
+          category: Database["public"]["Enums"]["ticket_category"] | null
+          contact_person: string | null
+          context: string | null
           created_at: string
           created_by: string
           description: string | null
           email_conversation_id: string | null
           email_source: string | null
+          equipment: Database["public"]["Enums"]["equipment_type"] | null
+          expected_behavior: string | null
           id: number
+          impacted_user: string | null
           last_email_date: string | null
           priority: string
+          reproducibility: string | null
+          request_type: Database["public"]["Enums"]["ticket_type"] | null
+          screenshot_url: string | null
+          software_version: string | null
           status: string
           title: string
           updated_at: string
         }
         Insert: {
+          actual_behavior?: string | null
           assigned_to?: string | null
+          attempted_actions?: string | null
+          availability_slots?: string | null
+          browser_version?: string | null
+          category?: Database["public"]["Enums"]["ticket_category"] | null
+          contact_person?: string | null
+          context?: string | null
           created_at?: string
           created_by: string
           description?: string | null
           email_conversation_id?: string | null
           email_source?: string | null
+          equipment?: Database["public"]["Enums"]["equipment_type"] | null
+          expected_behavior?: string | null
           id?: number
+          impacted_user?: string | null
           last_email_date?: string | null
           priority: string
+          reproducibility?: string | null
+          request_type?: Database["public"]["Enums"]["ticket_type"] | null
+          screenshot_url?: string | null
+          software_version?: string | null
           status?: string
           title: string
           updated_at?: string
         }
         Update: {
+          actual_behavior?: string | null
           assigned_to?: string | null
+          attempted_actions?: string | null
+          availability_slots?: string | null
+          browser_version?: string | null
+          category?: Database["public"]["Enums"]["ticket_category"] | null
+          contact_person?: string | null
+          context?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
           email_conversation_id?: string | null
           email_source?: string | null
+          equipment?: Database["public"]["Enums"]["equipment_type"] | null
+          expected_behavior?: string | null
           id?: number
+          impacted_user?: string | null
           last_email_date?: string | null
           priority?: string
+          reproducibility?: string | null
+          request_type?: Database["public"]["Enums"]["ticket_type"] | null
+          screenshot_url?: string | null
+          software_version?: string | null
           status?: string
           title?: string
           updated_at?: string
@@ -179,6 +221,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      equipment_type: "pc" | "mobile" | "server" | "other"
+      ticket_category:
+        | "hardware"
+        | "software"
+        | "network"
+        | "specific_application"
+      ticket_priority: "urgent" | "high" | "medium" | "low"
+      ticket_type: "incident" | "anomaly" | "improvement" | "question"
       user_role: "user" | "technician" | "admin"
     }
     CompositeTypes: {
