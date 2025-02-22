@@ -10,42 +10,59 @@ import IntegrationSettings from "@/components/settings/IntegrationSettings";
 import { useToast } from "@/components/ui/use-toast";
 import { Profile } from "@/types/supabase";
 import { supabase } from "@/lib/supabase";
+import { Loader2 } from "lucide-react";
 
 const Settings = () => {
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
 
-        if (error) {
-          toast({
-            title: "Erreur",
-            description: "Impossible de charger votre profil",
-            variant: "destructive",
-          });
-          return;
+          if (error) {
+            throw error;
+          }
+
+          console.log("Profile loaded:", profile); // Debugging
+          setCurrentUser(profile);
         }
-
-        setCurrentUser(profile);
+      } catch (error: any) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger votre profil",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchCurrentUser();
   }, []);
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Vérification si l'utilisateur est admin
   if (!currentUser || currentUser.role !== 'admin') {
     return (
       <div className="flex items-center justify-center h-full">
         <p className="text-muted-foreground">
-          Vous n'avez pas accès à cette page
+          Vous n'avez pas accès à cette page. Seuls les administrateurs peuvent y accéder.
         </p>
       </div>
     );
