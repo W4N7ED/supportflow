@@ -22,28 +22,44 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Plus, X } from "lucide-react";
 
+interface FormValues {
+  autoAssignment: boolean;
+  defaultPriority: string;
+  defaultCategory: string;
+  slaSettings: Record<string, string>;
+}
+
 const TicketingSettings = () => {
   const [priorities, setPriorities] = useState<string[]>(["urgent", "high", "normal", "low"]);
   const [newPriority, setNewPriority] = useState("");
 
-  const form = useForm({
+  const form = useForm<FormValues>({
     defaultValues: {
       autoAssignment: false,
       defaultPriority: "normal",
       defaultCategory: "software",
-      resolveTime: "24",
+      slaSettings: priorities.reduce((acc, priority) => ({
+        ...acc,
+        [priority]: "24"
+      }), {})
     },
   });
 
   const handleAddPriority = () => {
     if (newPriority && !priorities.includes(newPriority.toLowerCase())) {
-      setPriorities([...priorities, newPriority.toLowerCase()]);
+      const newPriorityValue = newPriority.toLowerCase();
+      setPriorities([...priorities, newPriorityValue]);
+      form.setValue(`slaSettings.${newPriorityValue}`, "24");
       setNewPriority("");
     }
   };
 
   const handleRemovePriority = (priority: string) => {
     setPriorities(priorities.filter(p => p !== priority));
+    const { slaSettings, ...rest } = form.getValues();
+    const newSlaSettings = { ...slaSettings };
+    delete newSlaSettings[priority];
+    form.reset({ ...rest, slaSettings: newSlaSettings });
   };
 
   return (
@@ -151,13 +167,18 @@ const TicketingSettings = () => {
               <FormField
                 key={priority}
                 control={form.control}
-                name={`sla_${priority}`}
+                name={`slaSettings.${priority}` as const}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="capitalize">Temps de résolution pour {priority}</FormLabel>
                     <FormControl>
                       <div className="flex items-center gap-2">
-                        <Input type="number" {...field} placeholder="24" />
+                        <Input
+                          type="number"
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          value={field.value || "24"}
+                        />
                         <span className="text-sm text-muted-foreground">heures</span>
                       </div>
                     </FormControl>
