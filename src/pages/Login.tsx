@@ -20,21 +20,29 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data: { user }, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
-      if (data.user) {
-        const { data: profile } = await supabase
+      if (user) {
+        // Vérifier le rôle de l'utilisateur
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', data.user.id)
+          .eq('id', user.id)
           .single();
 
-        if (profile && (profile.role === 'technician' || profile.role === 'admin')) {
+        if (profileError) throw profileError;
+
+        // Vérifier si l'utilisateur a un rôle autorisé
+        if (profile && ['admin', 'technician', 'user'].includes(profile.role)) {
+          toast({
+            title: "Connexion réussie",
+            description: `Bienvenue ${email}`,
+          });
           navigate('/');
         } else {
           throw new Error("Accès non autorisé");
@@ -61,7 +69,7 @@ const Login = () => {
         password,
         options: {
           data: {
-            role: 'user',
+            role: 'user', // Par défaut, les nouveaux utilisateurs sont des "users"
           },
         },
       });
@@ -72,6 +80,19 @@ const Login = () => {
         title: "Inscription réussie",
         description: "Veuillez vérifier votre email pour confirmer votre compte.",
       });
+
+      // Créer le profil de l'utilisateur
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            email: data.user.email,
+            role: 'user',
+          });
+
+        if (profileError) throw profileError;
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -87,7 +108,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <Card className="w-[400px]">
         <CardHeader>
-          <CardTitle>Connexion Technicien</CardTitle>
+          <CardTitle className="text-center">Système de Ticketing</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -114,10 +135,16 @@ const Login = () => {
             </div>
             <div className="flex justify-between space-x-2">
               <Button type="submit" className="flex-1" disabled={isLoading}>
-                Se connecter
+                {isLoading ? "Connexion..." : "Se connecter"}
               </Button>
-              <Button type="button" variant="outline" className="flex-1" onClick={handleSignUp} disabled={isLoading}>
-                S'inscrire
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="flex-1" 
+                onClick={handleSignUp} 
+                disabled={isLoading}
+              >
+                {isLoading ? "Inscription..." : "S'inscrire"}
               </Button>
             </div>
           </form>
