@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
+import { Microsoft } from "lucide-react";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -20,10 +21,33 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { data: { user }, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // Vérifier d'abord si l'identifiant est un email
+      const isEmail = identifier.includes('@');
+      
+      let authResponse;
+      if (isEmail) {
+        // Connexion avec email
+        authResponse = await supabase.auth.signInWithPassword({
+          email: identifier,
+          password,
+        });
+      } else {
+        // Connexion avec username - rechercher d'abord l'email correspondant
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('username', identifier)
+          .single();
+
+        if (profileError) throw new Error("Nom d'utilisateur non trouvé");
+
+        authResponse = await supabase.auth.signInWithPassword({
+          email: profileData.email,
+          password,
+        });
+      }
+
+      const { data: { user }, error } = authResponse;
 
       if (error) throw error;
 
@@ -37,11 +61,10 @@ const Login = () => {
 
         if (profileError) throw profileError;
 
-        // Vérifier si l'utilisateur a un rôle autorisé
         if (profile && ['admin', 'technician', 'user'].includes(profile.role)) {
           toast({
             title: "Connexion réussie",
-            description: `Bienvenue ${email}`,
+            description: `Bienvenue ${identifier}`,
           });
           navigate('/');
         } else {
@@ -59,17 +82,40 @@ const Login = () => {
     }
   };
 
+  const handleMicrosoftLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'azure',
+        options: {
+          scopes: 'email user.read',
+        },
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erreur de connexion Microsoft",
+        description: error.message,
+      });
+    }
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
+      if (!identifier.includes('@')) {
+        throw new Error("L'inscription nécessite une adresse email valide");
+      }
+
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: identifier,
         password,
         options: {
           data: {
-            role: 'user', // Par défaut, les nouveaux utilisateurs sont des "users"
+            role: 'user',
           },
         },
       });
@@ -81,13 +127,14 @@ const Login = () => {
         description: "Veuillez vérifier votre email pour confirmer votre compte.",
       });
 
-      // Créer le profil de l'utilisateur
       if (data.user) {
+        const username = identifier.split('@')[0];
         const { error: profileError } = await supabase
           .from('profiles')
           .insert({
             id: data.user.id,
             email: data.user.email,
+            username: username,
             role: 'user',
           });
 
@@ -113,13 +160,13 @@ const Login = () => {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="identifier">Email ou nom d'utilisateur</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="votre@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="identifier"
+                type="text"
+                placeholder="email@example.com ou username"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 required
               />
             </div>
@@ -133,18 +180,28 @@ const Login = () => {
                 required
               />
             </div>
-            <div className="flex justify-between space-x-2">
-              <Button type="submit" className="flex-1" disabled={isLoading}>
+            <div className="flex flex-col space-y-2">
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Connexion..." : "Se connecter"}
               </Button>
               <Button 
                 type="button" 
                 variant="outline" 
-                className="flex-1" 
+                className="w-full"
                 onClick={handleSignUp} 
                 disabled={isLoading}
               >
                 {isLoading ? "Inscription..." : "S'inscrire"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleMicrosoftLogin}
+                disabled={isLoading}
+              >
+                <Microsoft className="mr-2 h-4 w-4" />
+                Connexion avec Microsoft
               </Button>
             </div>
           </form>
