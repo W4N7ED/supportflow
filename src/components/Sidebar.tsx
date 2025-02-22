@@ -18,7 +18,25 @@ const Sidebar = () => {
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
 
   useEffect(() => {
-    const fetchCurrentUser = async () => {
+    // Charger le profil initial
+    fetchCurrentUser();
+
+    // S'abonner aux changements d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        fetchCurrentUser();
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchCurrentUser = async () => {
+    try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data: profile } = await supabase
@@ -27,12 +45,13 @@ const Sidebar = () => {
           .eq('id', user.id)
           .single();
 
+        console.log('Current user profile:', profile); // Pour le débogage
         setCurrentUser(profile);
       }
-    };
-
-    fetchCurrentUser();
-  }, []);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   return (
     <div className="flex w-64 flex-col border-r bg-white">
@@ -75,6 +94,7 @@ const Sidebar = () => {
           Base de connaissances
         </Button>
       </nav>
+      {/* Toujours afficher le bouton Paramètres pour admin */}
       {currentUser?.role === 'admin' && (
         <div className="border-t p-4">
           <Button
