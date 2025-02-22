@@ -31,7 +31,9 @@ interface FormValues {
 
 const TicketingSettings = () => {
   const [priorities, setPriorities] = useState<string[]>(["urgent", "high", "normal", "low"]);
+  const [categories, setCategories] = useState<string[]>(["software", "hardware", "network", "security"]);
   const [newPriority, setNewPriority] = useState("");
+  const [newCategory, setNewCategory] = useState("");
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -52,6 +54,20 @@ const TicketingSettings = () => {
       form.setValue(`slaSettings.${newPriorityValue}`, "24");
       setNewPriority("");
     }
+  };
+
+  const handleAddCategory = () => {
+    if (newCategory && !categories.includes(newCategory.toLowerCase())) {
+      setCategories([...categories, newCategory.toLowerCase()]);
+      setNewCategory("");
+    }
+  };
+
+  const handleRemoveCategory = (category: string) => {
+    if (category === form.getValues().defaultCategory) {
+      form.setValue("defaultCategory", categories[0]);
+    }
+    setCategories(categories.filter(c => c !== category));
   };
 
   const handleRemovePriority = (priority: string) => {
@@ -86,28 +102,60 @@ const TicketingSettings = () => {
             </TabsList>
 
             <TabsContent value="creation" className="space-y-4">
-              <FormField
-                control={form.control}
-                name="defaultCategory"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Catégorie par défaut</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner une catégorie" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="software">Logiciel</SelectItem>
-                        <SelectItem value="hardware">Matériel</SelectItem>
-                        <SelectItem value="network">Réseau</SelectItem>
-                        <SelectItem value="security">Sécurité</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="defaultCategory"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Catégorie par défaut</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner une catégorie" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category} value={category}>
+                              <span className="capitalize">{category}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Nouvelle catégorie"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                    />
+                    <Button type="button" variant="outline" size="icon" onClick={handleAddCategory}>
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {categories.map((category) => (
+                      <div key={category} className="flex items-center justify-between p-2 border rounded">
+                        <span className="capitalize">{category}</span>
+                        <Button 
+                          type="button"
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => handleRemoveCategory(category)}
+                          disabled={categories.length <= 1}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="priorities" className="space-y-4">
