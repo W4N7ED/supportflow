@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,12 +19,28 @@ const Login = () => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [backgroundUrl, setBackgroundUrl] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const { setTheme } = useTheme();
   
   const from = location.state?.from?.pathname || "/";
+
+  useEffect(() => {
+    loadBackground();
+  }, []);
+
+  const loadBackground = async () => {
+    const { data, error } = await supabase
+      .from('app_settings')
+      .select('login_background_url')
+      .single();
+
+    if (!error && data?.login_background_url) {
+      setBackgroundUrl(data.login_background_url);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +88,6 @@ const Login = () => {
             title: "Connexion réussie",
             description: `Bienvenue ${identifier}`,
           });
-          // Redirection vers la page d'origine ou le tableau de bord
           navigate(from, { replace: true });
         } else {
           throw new Error("Accès non autorisé");
@@ -110,8 +124,15 @@ const Login = () => {
     }
   };
 
+  const backgroundStyle = backgroundUrl ? {
+    backgroundImage: `url(${backgroundUrl})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  } : {};
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background transition-all" style={backgroundStyle}>
       <div className="absolute right-4 top-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -137,8 +158,8 @@ const Login = () => {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="w-[400px]">
+      <div className="flex items-center justify-center min-h-screen backdrop-blur-sm bg-background/50">
+        <Card className="w-[400px] bg-background/95">
           <CardHeader>
             <CardTitle className="text-center">Minticket</CardTitle>
           </CardHeader>
