@@ -3,8 +3,10 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserManagement from "@/components/settings/UserManagement";
-import RoleManagement from "@/components/settings/RoleManagement";
-import EmailSettings from "@/components/settings/EmailSettings";
+import GeneralSettings from "@/components/settings/GeneralSettings";
+import TicketingSettings from "@/components/settings/TicketingSettings";
+import SecuritySettings from "@/components/settings/SecuritySettings";
+import IntegrationSettings from "@/components/settings/IntegrationSettings";
 import { useToast } from "@/components/ui/use-toast";
 import { Profile } from "@/types/supabase";
 import { supabase } from "@/lib/supabase";
@@ -58,12 +60,26 @@ const Settings = () => {
         </p>
       </div>
 
-      <Tabs defaultValue="users">
-        <TabsList>
+      <Tabs defaultValue="general">
+        <TabsList className="grid grid-cols-5 w-full">
+          <TabsTrigger value="general">Général</TabsTrigger>
+          <TabsTrigger value="ticketing">Tickets</TabsTrigger>
           <TabsTrigger value="users">Utilisateurs</TabsTrigger>
-          <TabsTrigger value="roles">Rôles</TabsTrigger>
-          <TabsTrigger value="email">Configuration Email</TabsTrigger>
+          <TabsTrigger value="security">Sécurité</TabsTrigger>
+          <TabsTrigger value="integrations">Intégrations</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="general" className="space-y-4">
+          <Card className="p-6">
+            <GeneralSettings />
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="ticketing" className="space-y-4">
+          <Card className="p-6">
+            <TicketingSettings />
+          </Card>
+        </TabsContent>
         
         <TabsContent value="users" className="space-y-4">
           <Card className="p-6">
@@ -71,15 +87,15 @@ const Settings = () => {
           </Card>
         </TabsContent>
         
-        <TabsContent value="roles" className="space-y-4">
+        <TabsContent value="security" className="space-y-4">
           <Card className="p-6">
-            <RoleManagement />
+            <SecuritySettings />
           </Card>
         </TabsContent>
         
-        <TabsContent value="email" className="space-y-4">
+        <TabsContent value="integrations" className="space-y-4">
           <Card className="p-6">
-            <EmailSettings />
+            <IntegrationSettings />
           </Card>
         </TabsContent>
       </Tabs>
