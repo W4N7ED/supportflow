@@ -29,7 +29,7 @@ import { Card } from "@/components/ui/card";
 const ticketSchema = z.object({
   title: z.string().min(1, "Le titre est requis"),
   description: z.string().min(1, "La description est requise"),
-  priority: z.enum(["urgent", "high", "medium", "low"]),
+  priority: z.enum(["low", "medium", "high"]),
   request_type: z.enum(["incident", "anomaly", "improvement", "question"]),
   category: z.enum(["hardware", "software", "network", "specific_application"]),
   equipment: z.enum(["pc", "mobile", "server", "other"]),
@@ -65,7 +65,7 @@ const CreateTicket = () => {
   const onSubmit = async (data: TicketFormValues) => {
     setIsSubmitting(true);
     try {
-      const user = (await supabase.auth.getUser()).data.user;
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Non authentifié");
 
       const { error } = await supabase.from("tickets").insert({
@@ -82,6 +82,7 @@ const CreateTicket = () => {
       });
       navigate("/");
     } catch (error) {
+      console.error('Error creating ticket:', error);
       toast({
         variant: "destructive",
         title: "Erreur",

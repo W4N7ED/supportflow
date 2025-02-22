@@ -3,7 +3,7 @@ export interface Ticket {
   id: number;
   title: string;
   description: string;
-  priority: "urgent" | "high" | "medium" | "low";
+  priority: "low" | "medium" | "high";
   status: "open" | "in-progress" | "resolved" | "closed";
   created_at: string;
   updated_at: string;
