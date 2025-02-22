@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -96,56 +97,6 @@ const Login = () => {
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      if (!identifier.includes('@')) {
-        throw new Error("L'inscription nécessite une adresse email valide");
-      }
-
-      const { data, error } = await supabase.auth.signUp({
-        email: identifier,
-        password,
-        options: {
-          data: {
-            role: 'user',
-          },
-        },
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Inscription réussie",
-        description: "Veuillez vérifier votre email pour confirmer votre compte.",
-      });
-
-      if (data.user) {
-        const username = identifier.split('@')[0];
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            email: data.user.email,
-            username: username,
-            role: 'user',
-          });
-
-        if (profileError) throw profileError;
-      }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erreur d'inscription",
-        description: error.message,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <Card className="w-[400px]">
@@ -178,15 +129,6 @@ const Login = () => {
             <div className="flex flex-col space-y-2">
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Connexion..." : "Se connecter"}
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full"
-                onClick={handleSignUp} 
-                disabled={isLoading}
-              >
-                {isLoading ? "Inscription..." : "S'inscrire"}
               </Button>
               <Button
                 type="button"

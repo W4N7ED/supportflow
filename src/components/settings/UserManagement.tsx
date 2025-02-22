@@ -19,9 +19,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const UserManagement = () => {
   const [users, setUsers] = useState<Profile[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [newUser, setNewUser] = useState({
+    email: "",
+    username: "",
+    password: "",
+    role: "user" as "user" | "technician" | "admin",
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -69,9 +85,115 @@ const UserManagement = () => {
     fetchUsers();
   };
 
+  const handleCreateUser = async () => {
+    try {
+      // Créer l'utilisateur dans Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: newUser.email,
+        password: newUser.password,
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // Créer le profil
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            username: newUser.username,
+            role: newUser.role,
+          })
+          .eq('id', authData.user.id);
+
+        if (profileError) throw profileError;
+
+        toast({
+          title: "Succès",
+          description: "L'utilisateur a été créé",
+        });
+
+        setIsOpen(false);
+        setNewUser({
+          email: "",
+          username: "",
+          password: "",
+          role: "user",
+        });
+        fetchUsers();
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Gestion des Utilisateurs</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Gestion des Utilisateurs</h2>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button>Ajouter un utilisateur</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Créer un nouvel utilisateur</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="username">Nom d'utilisateur</Label>
+                <Input
+                  id="username"
+                  value={newUser.username}
+                  onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Mot de passe</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="role">Rôle</Label>
+                <Select
+                  value={newUser.role}
+                  onValueChange={(value: "user" | "technician" | "admin") =>
+                    setNewUser({ ...newUser, role: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un rôle" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">Utilisateur</SelectItem>
+                    <SelectItem value="technician">Technicien</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={handleCreateUser} className="w-full">
+                Créer l'utilisateur
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
       
       <Table>
         <TableHeader>
@@ -85,7 +207,7 @@ const UserManagement = () => {
         <TableBody>
           {users.map((user) => (
             <TableRow key={user.id}>
-              <TableCell>{user.full_name || 'N/A'}</TableCell>
+              <TableCell>{user.username || user.full_name || 'N/A'}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>
                 <Select
