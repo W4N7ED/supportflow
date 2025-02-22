@@ -1,5 +1,5 @@
 
-import Layout from "@/components/Layout";
+import { Layout } from "@/components/ui/sidebar";
 import { Card } from "@/components/ui/card";
 import { MessageSquare } from "lucide-react";
 
