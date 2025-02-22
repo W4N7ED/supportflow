@@ -7,7 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { MailIcon } from "lucide-react";
+import { MailIcon, Sun, Moon, Laptop } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useTheme } from "@/components/theme-provider";
 
 const Login = () => {
   const [identifier, setIdentifier] = useState("");
@@ -16,8 +23,8 @@ const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  const { setTheme } = useTheme();
   
-  // Récupère l'URL de redirection depuis l'état de location, sinon par défaut "/"
   const from = location.state?.from?.pathname || "/";
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -104,52 +111,79 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Card className="w-[400px]">
-        <CardHeader>
-          <CardTitle className="text-center">Minticket</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="identifier">Email ou nom d'utilisateur</Label>
-              <Input
-                id="identifier"
-                type="text"
-                placeholder="email@example.com ou username"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="flex flex-col space-y-2">
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Connexion..." : "Se connecter"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={handleMicrosoftLogin}
-                disabled={isLoading}
-              >
-                <MailIcon className="mr-2 h-4 w-4" />
-                Connexion avec Microsoft
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen bg-background">
+      <div className="absolute right-4 top-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Changer le thème</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setTheme("light")}>
+              <Sun className="mr-2 h-4 w-4" />
+              <span>Clair</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("dark")}>
+              <Moon className="mr-2 h-4 w-4" />
+              <span>Sombre</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("system")}>
+              <Laptop className="mr-2 h-4 w-4" />
+              <span>Système</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="w-[400px]">
+          <CardHeader>
+            <CardTitle className="text-center">Minticket</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="identifier">Email ou nom d'utilisateur</Label>
+                <Input
+                  id="identifier"
+                  type="text"
+                  placeholder="email@example.com ou username"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Mot de passe</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex flex-col space-y-2">
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Connexion..." : "Se connecter"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleMicrosoftLogin}
+                  disabled={isLoading}
+                >
+                  <MailIcon className="mr-2 h-4 w-4" />
+                  Connexion avec Microsoft
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
