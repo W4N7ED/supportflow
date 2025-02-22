@@ -9,6 +9,81 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      email_config: {
+        Row: {
+          check_interval: number
+          created_at: string
+          email_server: string
+          folder: string
+          id: number
+          password: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          check_interval?: number
+          created_at?: string
+          email_server: string
+          folder?: string
+          id?: number
+          password: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          check_interval?: number
+          created_at?: string
+          email_server?: string
+          folder?: string
+          id?: number
+          password?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: number
+          is_internal: boolean | null
+          sender_id: string | null
+          ticket_id: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: number
+          is_internal?: boolean | null
+          sender_id?: string | null
+          ticket_id?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: number
+          is_internal?: boolean | null
+          sender_id?: string | null
+          ticket_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
