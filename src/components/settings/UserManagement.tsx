@@ -28,17 +28,51 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { 
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Switch } from "@/components/ui/switch";
+import { generateStrongPassword } from "@/lib/utils";
+import { Loader2, Mail, Shield } from "lucide-react";
+
+const userSchema = z.object({
+  email: z.string().email("Email invalide"),
+  username: z.string().min(3, "Le nom d'utilisateur doit contenir au moins 3 caractères"),
+  full_name: z.string().min(2, "Le nom complet est requis"),
+  password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+  role: z.enum(["user", "technician", "admin"] as const),
+  is_active: z.boolean(),
+  send_welcome_email: z.boolean(),
+});
+
+type UserFormValues = z.infer<typeof userSchema>;
 
 const UserManagement = () => {
   const [users, setUsers] = useState<Profile[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [newUser, setNewUser] = useState({
-    email: "",
-    username: "",
-    password: "",
-    role: "user" as "user" | "technician" | "admin",
-  });
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  const form = useForm<UserFormValues>({
+    resolver: zodResolver(userSchema),
+    defaultValues: {
+      email: "",
+      username: "",
+      full_name: "",
+      password: generateStrongPassword(),
+      role: "user",
+      is_active: true,
+      send_welcome_email: true,
+    },
+  });
 
   useEffect(() => {
     fetchUsers();
@@ -62,7 +96,7 @@ const UserManagement = () => {
     setUsers(data || []);
   };
 
-  const updateUserRole = async (userId: string, newRole: string) => {
+  const updateUserRole = async (userId: string, newRole: Profile["role"]) => {
     const { error } = await supabase
       .from('profiles')
       .update({ role: newRole })
@@ -85,27 +119,41 @@ const UserManagement = () => {
     fetchUsers();
   };
 
-  const handleCreateUser = async () => {
+  const handleCreateUser = async (data: UserFormValues) => {
+    setIsLoading(true);
     try {
-      // Créer l'utilisateur dans Auth
+      // 1. Créer l'utilisateur dans Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: newUser.email,
-        password: newUser.password,
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            username: data.username,
+            full_name: data.full_name,
+          },
+        },
       });
 
       if (authError) throw authError;
 
       if (authData.user) {
-        // Créer le profil
+        // 2. Mettre à jour le profil avec les informations supplémentaires
         const { error: profileError } = await supabase
           .from('profiles')
           .update({
-            username: newUser.username,
-            role: newUser.role,
+            username: data.username,
+            full_name: data.full_name,
+            role: data.role,
           })
           .eq('id', authData.user.id);
 
         if (profileError) throw profileError;
+
+        // 3. Si demandé, envoyer un email de bienvenue (à implémenter)
+        if (data.send_welcome_email) {
+          // TODO: Implémenter l'envoi d'email de bienvenue
+          console.log("Envoi d'email de bienvenue à implémenter");
+        }
 
         toast({
           title: "Succès",
@@ -113,14 +161,43 @@ const UserManagement = () => {
         });
 
         setIsOpen(false);
-        setNewUser({
-          email: "",
-          username: "",
-          password: "",
-          role: "user",
-        });
+        form.reset();
         fetchUsers();
       }
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleUserStatus = async (userId: string, isActive: boolean) => {
+    try {
+      // Implémenter la désactivation du compte
+      toast({
+        title: "Info",
+        description: "La gestion du statut sera implémentée prochainement",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const resetPassword = async (userId: string) => {
+    try {
+      // TODO: Implémenter la réinitialisation du mot de passe
+      toast({
+        title: "Info",
+        description: "La réinitialisation du mot de passe sera implémentée prochainement",
+      });
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -138,59 +215,148 @@ const UserManagement = () => {
           <DialogTrigger asChild>
             <Button>Ajouter un utilisateur</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[525px]">
             <DialogHeader>
               <DialogTitle>Créer un nouvel utilisateur</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={newUser.email}
-                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleCreateUser)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="email" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="username">Nom d'utilisateur</Label>
-                <Input
-                  id="username"
-                  value={newUser.username}
-                  onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nom d'utilisateur</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={newUser.password}
-                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+
+                <FormField
+                  control={form.control}
+                  name="full_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nom complet</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="role">Rôle</Label>
-                <Select
-                  value={newUser.role}
-                  onValueChange={(value: "user" | "technician" | "admin") =>
-                    setNewUser({ ...newUser, role: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un rôle" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="user">Utilisateur</SelectItem>
-                    <SelectItem value="technician">Technicien</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button onClick={handleCreateUser} className="w-full">
-                Créer l'utilisateur
-              </Button>
-            </div>
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mot de passe</FormLabel>
+                      <FormControl>
+                        <div className="flex gap-2">
+                          <Input {...field} type="text" />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => form.setValue('password', generateStrongPassword())}
+                          >
+                            Générer
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Rôle</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner un rôle" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="user">Utilisateur</SelectItem>
+                          <SelectItem value="technician">Technicien</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="is_active"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel>Compte actif</FormLabel>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="send_welcome_email"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel>Envoyer un email de bienvenue</FormLabel>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Création en cours...
+                    </>
+                  ) : (
+                    "Créer l'utilisateur"
+                  )}
+                </Button>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
@@ -200,22 +366,25 @@ const UserManagement = () => {
           <TableRow>
             <TableHead>Nom</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Nom d'utilisateur</TableHead>
             <TableHead>Rôle</TableHead>
+            <TableHead>Statut</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {users.map((user) => (
             <TableRow key={user.id}>
-              <TableCell>{user.username || user.full_name || 'N/A'}</TableCell>
+              <TableCell>{user.full_name || 'N/A'}</TableCell>
               <TableCell>{user.email}</TableCell>
+              <TableCell>{user.username || 'N/A'}</TableCell>
               <TableCell>
                 <Select
                   value={user.role}
-                  onValueChange={(value) => updateUserRole(user.id, value)}
+                  onValueChange={(value: Profile["role"]) => updateUserRole(user.id, value)}
                 >
                   <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Sélectionner un rôle" />
+                    <SelectValue placeholder="Rôle" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="user">Utilisateur</SelectItem>
@@ -225,14 +394,19 @@ const UserManagement = () => {
                 </Select>
               </TableCell>
               <TableCell>
+                <Switch
+                  checked={true} // TODO: Implémenter le statut
+                  onCheckedChange={(checked) => toggleUserStatus(user.id, checked)}
+                />
+              </TableCell>
+              <TableCell className="space-x-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    // Implémenter la suppression si nécessaire
-                  }}
+                  onClick={() => resetPassword(user.id)}
                 >
-                  Supprimer
+                  <Mail className="w-4 h-4 mr-1" />
+                  Réinitialiser
                 </Button>
               </TableCell>
             </TableRow>
