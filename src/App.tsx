@@ -11,6 +11,7 @@ import Reports from "./pages/Reports";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import CreateTicket from "./pages/CreateTicket";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/create-ticket" element={<CreateTicket />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/reports" element={<Reports />} />

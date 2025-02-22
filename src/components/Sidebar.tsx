@@ -16,7 +16,7 @@ const Sidebar = () => {
   return (
     <div className="flex w-64 flex-col border-r bg-white">
       <div className="p-4">
-        <Button className="w-full gap-2">
+        <Button className="w-full gap-2" onClick={() => navigate('/create-ticket')}>
           <Plus className="h-4 w-4" /> Nouveau Ticket
         </Button>
       </div>
