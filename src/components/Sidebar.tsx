@@ -32,6 +32,7 @@ const Sidebar = () => {
         <Button
           variant="ghost"
           className="w-full justify-start gap-2 px-3"
+          onClick={() => navigate('/messages')}
         >
           <MessageSquare className="h-4 w-4" />
           Messages
@@ -39,6 +40,7 @@ const Sidebar = () => {
         <Button
           variant="ghost"
           className="w-full justify-start gap-2 px-3"
+          onClick={() => navigate('/reports')}
         >
           <PieChart className="h-4 w-4" />
           Rapports
@@ -46,6 +48,7 @@ const Sidebar = () => {
         <Button
           variant="ghost"
           className="w-full justify-start gap-2 px-3"
+          onClick={() => navigate('/knowledge-base')}
         >
           <List className="h-4 w-4" />
           Base de connaissances

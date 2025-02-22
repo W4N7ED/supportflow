@@ -1,1 +1,5 @@
+
 project_id = "zcyzaeikkdjgtxsfrulg"
+
+[check-emails]
+src_dir = "functions/check-emails"
