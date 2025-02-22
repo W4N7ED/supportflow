@@ -1,19 +1,17 @@
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
 import { Ticket } from "@/types/supabase";
 import { useToast } from "@/components/ui/use-toast";
 
-interface TicketListProps {
-  onSelectTicket: (id: number) => void;
-}
-
-const TicketList = ({ onSelectTicket }: TicketListProps) => {
+const TicketList = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchTickets();
@@ -85,8 +83,8 @@ const TicketList = ({ onSelectTicket }: TicketListProps) => {
       {tickets.map((ticket) => (
         <Card
           key={ticket.id}
-          className="ticket-card cursor-pointer"
-          onClick={() => onSelectTicket(ticket.id)}
+          className="ticket-card cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => navigate(`/ticket/${ticket.id}`)}
         >
           <div className="flex items-start justify-between">
             <div>

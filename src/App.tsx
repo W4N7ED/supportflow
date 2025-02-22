@@ -14,6 +14,7 @@ import KnowledgeBase from "./pages/KnowledgeBase";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import CreateTicket from "./pages/CreateTicket";
+import TicketDetails from "./pages/TicketDetails";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,14 @@ const App = () => (
               element={
                 <PrivateRoute>
                   <CreateTicket />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/ticket/:id"
+              element={
+                <PrivateRoute>
+                  <TicketDetails />
                 </PrivateRoute>
               }
             />
