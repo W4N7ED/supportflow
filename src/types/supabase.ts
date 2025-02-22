@@ -28,6 +28,7 @@ export interface Ticket {
 export interface Profile {
   id: string;
   email: string;
+  username?: string;
   full_name?: string;
   avatar_url?: string;
   role: "user" | "technician" | "admin";
