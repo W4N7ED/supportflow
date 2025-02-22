@@ -12,12 +12,15 @@ import {
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const SecuritySettings = () => {
   const form = useForm({
     defaultValues: {
       twoFactorAuth: false,
       dataRetention: "30",
+      keepDataIndefinitely: false,
       auditLogs: true,
     },
   });
@@ -58,12 +61,44 @@ const SecuritySettings = () => {
 
           <FormField
             control={form.control}
+            name="keepDataIndefinitely"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Conservation indéfinie</FormLabel>
+                  <FormDescription>
+                    Conserver toutes les données indéfiniment
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked);
+                      if (checked) {
+                        form.setValue("dataRetention", "0");
+                      } else {
+                        form.setValue("dataRetention", "30");
+                      }
+                    }}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name="dataRetention"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Conservation des données (jours)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input 
+                    type="number" 
+                    {...field} 
+                    disabled={form.watch("keepDataIndefinitely")}
+                  />
                 </FormControl>
                 <FormDescription>
                   Durée de conservation des tickets fermés

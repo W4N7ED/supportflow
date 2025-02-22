@@ -7,6 +7,7 @@ import GeneralSettings from "@/components/settings/GeneralSettings";
 import TicketingSettings from "@/components/settings/TicketingSettings";
 import SecuritySettings from "@/components/settings/SecuritySettings";
 import IntegrationSettings from "@/components/settings/IntegrationSettings";
+import EmailSettings from "@/components/settings/EmailSettings";
 import { useToast } from "@/components/ui/use-toast";
 import { Profile } from "@/types/supabase";
 import { supabase } from "@/lib/supabase";
@@ -32,7 +33,7 @@ const Settings = () => {
             throw error;
           }
 
-          console.log("Profile loaded:", profile); // Debugging
+          console.log("Profile loaded:", profile);
           setCurrentUser(profile);
         }
       } catch (error: any) {
@@ -57,7 +58,6 @@ const Settings = () => {
     );
   }
 
-  // Vérification si l'utilisateur est admin
   if (!currentUser || currentUser.role !== 'admin') {
     return (
       <div className="flex items-center justify-center h-full">
@@ -78,9 +78,10 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="general">
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-6 w-full">
           <TabsTrigger value="general">Général</TabsTrigger>
           <TabsTrigger value="ticketing">Tickets</TabsTrigger>
+          <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="users">Utilisateurs</TabsTrigger>
           <TabsTrigger value="security">Sécurité</TabsTrigger>
           <TabsTrigger value="integrations">Intégrations</TabsTrigger>
@@ -95,6 +96,12 @@ const Settings = () => {
         <TabsContent value="ticketing" className="space-y-4">
           <Card className="p-6">
             <TicketingSettings />
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="email" className="space-y-4">
+          <Card className="p-6">
+            <EmailSettings />
           </Card>
         </TabsContent>
         
