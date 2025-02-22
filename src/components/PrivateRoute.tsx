@@ -35,6 +35,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!user) {
+    // Sauvegarde l'URL actuelle pour rediriger après la connexion
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

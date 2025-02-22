@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,10 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Récupère l'URL de redirection depuis l'état de location, sinon par défaut "/"
+  const from = location.state?.from?.pathname || "/";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +66,8 @@ const Login = () => {
             title: "Connexion réussie",
             description: `Bienvenue ${identifier}`,
           });
-          navigate('/');
+          // Redirection vers la page d'origine ou le tableau de bord
+          navigate(from, { replace: true });
         } else {
           throw new Error("Accès non autorisé");
         }
@@ -84,6 +89,7 @@ const Login = () => {
         provider: 'azure',
         options: {
           scopes: 'email user.read',
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
