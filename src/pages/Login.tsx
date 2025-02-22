@@ -108,7 +108,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <Card className="w-[400px]">
         <CardHeader>
-          <CardTitle className="text-center">Système de Ticketing</CardTitle>
+          <CardTitle className="text-center">Minticket</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
