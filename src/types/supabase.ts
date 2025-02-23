@@ -9,6 +9,7 @@ export interface Ticket {
   updated_at: string;
   assigned_to?: string;
   created_by: string;
+  organization_id?: number;
   request_type: "incident" | "anomaly" | "improvement" | "question";
   category: "hardware" | "software" | "network" | "specific_application";
   equipment: "pc" | "mobile" | "server" | "other";
