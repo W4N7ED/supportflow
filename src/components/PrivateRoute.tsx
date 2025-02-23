@@ -1,45 +1,26 @@
 
-import { useEffect, useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { FC, ReactNode } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import Header from "./Header";
 
-const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  const location = useLocation();
+interface PrivateRouteProps {
+  children: ReactNode;
+}
 
-  useEffect(() => {
-    checkUser();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      checkUser();
-    });
+const PrivateRoute: FC<PrivateRouteProps> = ({ children }) => {
+  const { session } = useAuth();
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  async function checkUser() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    } catch (error) {
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
+  if (!session) {
+    return <Navigate to="/login" />;
   }
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">Chargement...</div>;
-  }
-
-  if (!user) {
-    // Sauvegarde l'URL actuelle pour rediriger après la connexion
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  return <>{children}</>;
+  return (
+    <div className="flex h-screen flex-col">
+      <Header />
+      {children}
+    </div>
+  );
 };
 
 export default PrivateRoute;

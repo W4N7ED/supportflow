@@ -69,60 +69,62 @@ const Settings = () => {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Paramètres</h1>
-        <p className="text-muted-foreground">
-          Gérez les paramètres de l'application
-        </p>
-      </div>
+    <div className="flex-1 overflow-auto">
+      <div className="container mx-auto py-6 space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">Paramètres</h1>
+          <p className="text-muted-foreground">
+            Gérez les paramètres de l'application
+          </p>
+        </div>
 
-      <Tabs defaultValue="general">
-        <TabsList className="grid grid-cols-6 w-full">
-          <TabsTrigger value="general">Général</TabsTrigger>
-          <TabsTrigger value="ticketing">Tickets</TabsTrigger>
-          <TabsTrigger value="email">Email</TabsTrigger>
-          <TabsTrigger value="users">Utilisateurs</TabsTrigger>
-          <TabsTrigger value="security">Sécurité</TabsTrigger>
-          <TabsTrigger value="integrations">Intégrations</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="general" className="space-y-4">
-          <Card className="p-6">
-            <GeneralSettings />
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="ticketing" className="space-y-4">
-          <Card className="p-6">
-            <TicketingSettings />
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="email" className="space-y-4">
-          <Card className="p-6">
-            <EmailSettings />
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="users" className="space-y-4">
-          <Card className="p-6">
-            <UserManagement />
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="security" className="space-y-4">
-          <Card className="p-6">
-            <SecuritySettings />
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="integrations" className="space-y-4">
-          <Card className="p-6">
-            <IntegrationSettings />
-          </Card>
-        </TabsContent>
-      </Tabs>
+        <Tabs defaultValue="general">
+          <TabsList className="grid grid-cols-6 w-full">
+            <TabsTrigger value="general">Général</TabsTrigger>
+            <TabsTrigger value="ticketing">Tickets</TabsTrigger>
+            <TabsTrigger value="email">Email</TabsTrigger>
+            <TabsTrigger value="users">Utilisateurs</TabsTrigger>
+            <TabsTrigger value="security">Sécurité</TabsTrigger>
+            <TabsTrigger value="integrations">Intégrations</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="general" className="space-y-4">
+            <Card className="p-6">
+              <GeneralSettings />
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="ticketing" className="space-y-4">
+            <Card className="p-6">
+              <TicketingSettings />
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="email" className="space-y-4">
+            <Card className="p-6">
+              <EmailSettings />
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="users" className="space-y-4">
+            <Card className="p-6">
+              <UserManagement />
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="security" className="space-y-4">
+            <Card className="p-6">
+              <SecuritySettings />
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="integrations" className="space-y-4">
+            <Card className="p-6">
+              <IntegrationSettings />
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };
