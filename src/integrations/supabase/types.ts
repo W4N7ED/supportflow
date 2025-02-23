@@ -9,6 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      contacts: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string
+          id: number
+          is_primary: boolean | null
+          last_name: string
+          organization_id: number | null
+          phone: string | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name: string
+          id?: number
+          is_primary?: boolean | null
+          last_name: string
+          organization_id?: number | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: number
+          is_primary?: boolean | null
+          last_name?: string
+          organization_id?: number | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_config: {
         Row: {
           check_interval: number
@@ -84,6 +131,39 @@ export type Database = {
           },
         ]
       }
+      organizations: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: number
+          name: string
+          phone: string | null
+          type: Database["public"]["Enums"]["organization_type"]
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: number
+          name: string
+          phone?: string | null
+          type?: Database["public"]["Enums"]["organization_type"]
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: number
+          name?: string
+          phone?: string | null
+          type?: Database["public"]["Enums"]["organization_type"]
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -111,6 +191,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ticket_contacts: {
+        Row: {
+          contact_id: number
+          created_at: string
+          ticket_id: number
+        }
+        Insert: {
+          contact_id: number
+          created_at?: string
+          ticket_id: number
+        }
+        Update: {
+          contact_id?: number
+          created_at?: string
+          ticket_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_contacts_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_contacts_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tickets: {
         Row: {
           actual_behavior: string | null
@@ -131,6 +244,7 @@ export type Database = {
           id: number
           impacted_user: string | null
           last_email_date: string | null
+          organization_id: number | null
           priority: string
           reproducibility: string | null
           request_type: Database["public"]["Enums"]["ticket_type"] | null
@@ -159,6 +273,7 @@ export type Database = {
           id?: number
           impacted_user?: string | null
           last_email_date?: string | null
+          organization_id?: number | null
           priority: string
           reproducibility?: string | null
           request_type?: Database["public"]["Enums"]["ticket_type"] | null
@@ -187,6 +302,7 @@ export type Database = {
           id?: number
           impacted_user?: string | null
           last_email_date?: string | null
+          organization_id?: number | null
           priority?: string
           reproducibility?: string | null
           request_type?: Database["public"]["Enums"]["ticket_type"] | null
@@ -211,6 +327,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "tickets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -222,6 +345,7 @@ export type Database = {
     }
     Enums: {
       equipment_type: "pc" | "mobile" | "server" | "other"
+      organization_type: "client" | "partner" | "internal"
       ticket_category:
         | "hardware"
         | "software"
