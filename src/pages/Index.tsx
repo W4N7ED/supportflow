@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,11 +23,13 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const navigate = useNavigate();
 
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ["tickets"],
@@ -163,11 +164,18 @@ const Index = () => {
           <div className="w-1/2 p-6 bg-white overflow-auto">
             {selectedTicket ? (
               <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold">{selectedTicket.title}</h2>
-                  <p className="text-sm text-gray-500">
-                    Créé le {formatDate(selectedTicket.created_at)}
-                  </p>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="text-2xl font-bold">{selectedTicket.title}</h2>
+                    <p className="text-sm text-gray-500">
+                      Créé le {formatDate(selectedTicket.created_at)}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => navigate(`/tickets/${selectedTicket.id}`)}
+                  >
+                    Ouvrir le ticket
+                  </Button>
                 </div>
                 <div className="flex gap-4">
                   <div className={`text-sm ${getStatusColor(selectedTicket.status)}`}>
