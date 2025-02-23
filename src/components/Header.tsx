@@ -11,11 +11,36 @@ import {
 import { useTheme } from "./theme-provider";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "./ui/use-toast";
+import { useEffect, useState } from "react";
+import { Profile } from "@/types/supabase";
 
 const Header = () => {
   const { setTheme } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (error) throw error;
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -44,26 +69,6 @@ const Header = () => {
           >
             Minticket
           </Link>
-          <nav className="hidden md:flex items-center space-x-4 ml-6">
-            <Link 
-              to="/create-ticket" 
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              Nouveau ticket
-            </Link>
-            <Link 
-              to="/knowledge-base" 
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              Base de connaissances
-            </Link>
-            <Link 
-              to="/reports" 
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              Rapports
-            </Link>
-          </nav>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -106,7 +111,11 @@ const Header = () => {
                 <User className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
+              <div className="p-2 text-sm border-b">
+                <p className="font-medium">{profile?.full_name || 'Utilisateur'}</p>
+                <p className="text-muted-foreground text-xs">{profile?.email}</p>
+              </div>
               <DropdownMenuItem onSelect={() => navigate('/settings')}>
                 <User className="mr-2 h-4 w-4" />
                 <span>Paramètres</span>
